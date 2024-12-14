@@ -1,41 +1,57 @@
 import "./styles.css";
 
-async function getLocation(location){
-    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?unitGroup=metric&key=X8KY8DYWQDMDVJJ3WU8BZ27UW&contentType=json`
-    const response = await fetch(url)
-    return response.json()
-  
-    
+async function getLocation() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${search}?unitGroup=metric&key=X8KY8DYWQDMDVJJ3WU8BZ27UW&contentType=json`;
+    const response = await fetch(url);
+    return response.json();
 }
 
-function getObject(){
-    getLocation("bucharest").then(function(data){
-        const weather = {
-            temperature: data.currentConditions.temp,
-            feelsLike: data.currentConditions.feelsLike,
-            snow: data.currentConditions.snow,
-        }
+function getObject() {
+    getLocation()
+        .then(function (data) {
+            const weather = {
+                temperature: data.currentConditions.temp,
+                feelsLike: data.currentConditions.feelslike,
+                humidity: data.currentConditions.humidity,
+                conditions: data.currentConditions.conditions,
+            };
 
-        console.log(weather)
-        return weather
-    })
-        
-    
+            updateWeatherDiv(weather); 
+        })
+        .catch(function (error) {
+            console.error("Error fetching weather data:", error);
+        });
 }
 
-getObject()
+function updateWeatherDiv(weather) {
+    let weatherDiv = document.getElementById("weatherInfo"); 
 
-
-// const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?unitGroup=metric&key=X8KY8DYWQDMDVJJ3WU8BZ27UW&contentType=json`
     
-// const obj = JSON.parse(stuff)
-    // console.log(obj)
+    if (!weatherDiv) {
+        weatherDiv = document.createElement("div");
+        weatherDiv.id = "weatherInfo";
+        document.body.appendChild(weatherDiv); 
+        console.log("weatherInfo div created and appended!");
+    }
 
-// // getLocation("london")
+    
+    weatherDiv.innerHTML = `
+        <div class="weather-detail"><strong>Temperature:</strong> ${weather.temperature} °C</div>
+        <div class="weather-detail"><strong>Feels Like:</strong> ${weather.feelsLike} °C</div>
+        <div class="weather-detail"><strong>Humidity:</strong> ${weather.humidity} %</div>
+        <div class="weather-detail"><strong>Conditions:</strong> ${weather.conditions}</div>
+    `;
 
-// getObject()
-// getLocation("bucharest")
+    
+    weatherDiv.style.display = "block";
+}
 
-// fetch("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/bucharest?unitGroup=metric&key=X8KY8DYWQDMDVJJ3WU8BZ27UW&contentType=json")
-//     .then(response => response.json())
-//     .then(data => console.log(data.currentConditions.temp))
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchBtn = document.getElementById("searchBtn");
+
+    searchBtn.addEventListener("click", () => {
+        getObject();
+    });
+});
